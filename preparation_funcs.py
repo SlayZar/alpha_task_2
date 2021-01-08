@@ -19,13 +19,13 @@ with open('alpha_task_2/constants/dense_features_buckets.pkl', 'rb') as f:
 with open('alpha_task_2/constants/buckets_info.pkl', 'rb') as f:
     mapping_seq_len_to_padded_len = pickle.load(f)
 
-
+# Софтмакс
 def softmax(x):
     """Compute softmax values for each sets of scores in x."""
     e_x = np.exp(x - np.max(x))
     return e_x / e_x.sum()
 
-    
+# Агрегаты для бустинга через pivot    
 def __amnt_pivot_table_by_column_as_frame(frame, column, agg_funcs=None) -> pd.DataFrame:
     if agg_funcs is None:
         agg_funcs = ['mean', 'count']
@@ -38,7 +38,6 @@ def __amnt_pivot_table_by_column_as_frame(frame, column, agg_funcs=None) -> pd.D
 
 
 # Функция для расчёта фичей для модели бустинга
-
 def preprocess(train_df):
   good_cols = joblib.load('alpha_task_2/models/good_cols')
   train_df['amnt_rub'] = np.exp(train_df['amnt']*17.8209)-1
@@ -88,7 +87,6 @@ def preprocess(train_df):
   
   
 # Функция для скоринга моделями бустинга и сохранения результатов
-
 def boost_scor(t_s, sample_subm, cols_path, model_path, cats_path, output_path):
   test_scores = t_s.copy()
   cols = joblib.load(cols_path)
@@ -104,7 +102,6 @@ def boost_scor(t_s, sample_subm, cols_path, model_path, cats_path, output_path):
   
 
 # Функция для подготовки данных для нейросети
-
 def create_buckets_from_transactions(path_to_dataset, save_to_path, frame_with_ids = None, 
                                      num_parts_to_preprocess_at_once: int = 1, 
                                      num_parts_total=50, has_target=False):
@@ -147,7 +144,7 @@ def boost_scor(t_s, test_targ, cols_path, model_path, cats_path, output_path):
   sample_subm2.rename(columns={'score': 'flag'}, inplace=True)
   sample_subm2.to_csv(output_path, index=False)
 
-    
+# Функция для скоринга моделью нейросети
 def nn_scoring(path_to_test_dataset, path_to_checkpoints, model_name, result_path):
   dir_with_test_datasets = os.listdir(path_to_test_dataset)
   dataset_test = sorted([os.path.join(path_to_test_dataset, x) for x in dir_with_test_datasets])
