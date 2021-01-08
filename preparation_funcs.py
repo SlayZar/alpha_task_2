@@ -5,20 +5,27 @@ import torch.nn as nn
 import torch
 import pickle
 import os
-from dataset_preprocessing_utils import transform_transactions_to_sequences, create_padded_buckets
+from alpha_task_2.dataset_preprocessing_utils import transform_transactions_to_sequences, create_padded_buckets
 from scipy import stats
 from tqdm.notebook import tqdm
 from catboost import CatBoostClassifier, Pool
-from utils import read_parquet_dataset_from_local
-from pytorch_training import inference
+from alpha_task_2.utils import read_parquet_dataset_from_local
+from alpha_task_2.pytorch_training import inference
 
-with open('constants/embedding_projections.pkl', 'rb') as f:
+with open('alpha_task_2/constants/embedding_projections.pkl', 'rb') as f:
     embedding_projections = pickle.load(f)
-with open('constants/dense_features_buckets.pkl', 'rb') as f:
+with open('alpha_task_2/constants/dense_features_buckets.pkl', 'rb') as f:
     dense_features_buckets = pickle.load(f)
-with open('constants/buckets_info.pkl', 'rb') as f:
+with open('alpha_task_2/constants/buckets_info.pkl', 'rb') as f:
     mapping_seq_len_to_padded_len = pickle.load(f)
 
+
+def softmax(x):
+    """Compute softmax values for each sets of scores in x."""
+    e_x = np.exp(x - np.max(x))
+    return e_x / e_x.sum()
+
+    
 def __amnt_pivot_table_by_column_as_frame(frame, column, agg_funcs=None) -> pd.DataFrame:
     if agg_funcs is None:
         agg_funcs = ['mean', 'count']
@@ -33,7 +40,7 @@ def __amnt_pivot_table_by_column_as_frame(frame, column, agg_funcs=None) -> pd.D
 # Функция для расчёта фичей для модели бустинга
 
 def preprocess(train_df):
-  good_cols = joblib.load('prep_files/good_cols')
+  good_cols = joblib.load('alpha_task_2/models/good_cols')
   train_df['amnt_rub'] = np.exp(train_df['amnt']*17.8209)-1
   cols1 = ['amnt', 'amnt_rub', 'hour_diff', 'days_before']
   feat0 = pd.DataFrame()
@@ -141,7 +148,10 @@ def boost_scor(t_s, test_targ, cols_path, model_path, cats_path, output_path):
   sample_subm2.to_csv(output_path, index=False)
 
     
-def nn_scoring(path_to_checkpoints, model_name, result_path):
+def nn_scoring(path_to_test_dataset, path_to_checkpoints, model_name, result_path):
+  dir_with_test_datasets = os.listdir(path_to_test_dataset)
+  dataset_test = sorted([os.path.join(path_to_test_dataset, x) for x in dir_with_test_datasets])
+
   model = TransactionsRnn(transaction_features, embedding_projections, top_classifier_units=128).to(device)
   model.load_state_dict(torch.load(os.path.join(path_to_checkpoints, model_name)))
   test_preds = inference(model, dataset_test, batch_size=128, device=device)
