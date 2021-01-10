@@ -11,6 +11,7 @@ from tqdm.notebook import tqdm
 from catboost import CatBoostClassifier, Pool
 from alpha_task_2.utils import read_parquet_dataset_from_local
 from alpha_task_2.pytorch_training import inference
+from alpha_task_2.data_generators import batches_generator, transaction_features
 
 with open('alpha_task_2/constants/embedding_projections.pkl', 'rb') as f:
     embedding_projections = pickle.load(f)
@@ -145,7 +146,7 @@ def boost_scor(t_s, test_targ, cols_path, model_path, cats_path, output_path):
   sample_subm2.to_csv(output_path, index=False)
 
 # Функция для скоринга моделью нейросети
-def nn_scoring(path_to_test_dataset, path_to_checkpoints, model_name, result_path):
+def nn_scoring(path_to_test_dataset, path_to_checkpoints, model_name, result_path, device):
   dir_with_test_datasets = os.listdir(path_to_test_dataset)
   dataset_test = sorted([os.path.join(path_to_test_dataset, x) for x in dir_with_test_datasets])
 
