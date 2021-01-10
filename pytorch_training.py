@@ -4,7 +4,7 @@ import torch.nn as nn
 from tqdm.notebook import tqdm
 from sklearn.metrics import roc_auc_score
 
-from data_generators import batches_generator
+from alpha_task_2.data_generators import batches_generator
 
 
 def train_epoch(model, optimizer, dataset_train, batch_size=64, shuffle=True,
