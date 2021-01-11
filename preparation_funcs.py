@@ -178,8 +178,8 @@ def agg_scoring(sols_path, models_path):
       s_m[f'sol_{i}_rank'] = s_m[f'sol_{i}_soft'].rank()
 
   agg_cols = joblib.load(f'{models_path}/agg_cols')
-  cb.load_model(f'{models_path}/agg_model')
   cb = CatBoostClassifier()
+  cb.load_model(f'{models_path}/agg_model')
   s_m['flag'] = cb.predict_proba(s_m[cols])[:,1]
   s_m[['app_id', 'flag']].to_csv('alpha_task_2/final_solution.csv', index=False)
 	
