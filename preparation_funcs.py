@@ -244,7 +244,7 @@ class TransactionsRnn(nn.Module):
 class TransactionsRnn2(nn.Module):
     def __init__(self, transactions_cat_features, embedding_projections, product_col_name='product', 
                  rnn_units=128, top_classifier_units=32):
-        super(TransactionsRnn, self).__init__()
+        super(TransactionsRnn2, self).__init__()
         
         self._transaction_cat_embeddings = nn.ModuleList([self._create_embedding_projection(*embedding_projections[feature], 
                                                                                             padding_idx=None) 
