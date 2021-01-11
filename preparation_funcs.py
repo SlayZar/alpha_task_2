@@ -86,7 +86,20 @@ def preprocess(train_df):
       our_cols.append(i)
   return all_feat[our_cols]
   
-  
+# Функция обучения моделей бустинга
+def boost_fit(train_scores, MODEL_PATH, model_id)
+  cols = joblib.load(f'{MODEL_PATH}/cols_{model_id}')
+  cats = joblib.load(f'{MODEL_PATH}/cats_{model_id}')
+  params = joblib.load(f'{MODEL_PATH}/params_{model_id}')
+  X_train, X_val, y_train, y_val = train_test_split(train_scores[cols], train_scores.flag, 
+                                                    test_size=0.25, random_state=123, stratify=train_scores.flag)
+  train_pool = Pool(X_train, y_train, cat_features=cats)
+  val_pool = Pool(X_val, y_val, cat_features=cats)
+  cb = CatBoostClassifier(**params)
+  cb.fit(train_pool, eval_set=val_pool, early_stopping_rounds=150, verbose=0)
+  cb.save_model(f"{MODEL_PATH}/model_{model_id}")
+  print(f"Model {model_id} saved")  
+
 # Функция для скоринга моделями бустинга и сохранения результатов
 def boost_scor(t_s, sample_subm, model_paths, sol_path, model_number):
   cols_path = f'{model_paths}/cols_{model_number}'
