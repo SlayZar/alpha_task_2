@@ -157,6 +157,32 @@ def nn_scoring(path_to_test_dataset, path_to_checkpoints, model_name, result_pat
   test_preds = inference(model, dataset_test, batch_size=128, device=device)
   test_preds.to_csv(result_path, index=None)
 
+# Агрегация скорингов
+def agg_scoring(sols_path, model_path):
+  s9 = pd.read_csv(f'{sols_path}/sol9.csv', names = ['app_id', 'sol_9'], skiprows=1)
+  s10 = pd.read_csv(f'{sols_path}/sol10.csv', names = ['app_id', 'sol_10'], skiprows=1)
+  s12 = pd.read_csv(f'{sols_path}/sol12.csv', names = ['app_id', 'sol_12'], skiprows=1)
+  s13 = pd.read_csv(f'{sols_path}/sol13.csv', names = ['app_id', 'sol_13'], skiprows=1)
+  rnn1 = pd.read_csv(f'{sols_path}/nn_mod1.csv', names = ['app_id', 'score_1'], skiprows=1)
+  rnn2 = pd.read_csv(f'{sols_path}/nn_mod2.csv', names = ['app_id', 'score_2'], skiprows=1)
+  rnn3 = pd.read_csv(f'{sols_path}/nn_mod3.csv', names = ['app_id', 'score_3'], skiprows=1)
+
+  s_m = s9.merge(s10, on=['app_id']).merge(s12, on=['app_id']).merge(s13, on=['app_id'])\
+    .merge(rnn1, on=['app_id']).merge(rnn2, on=['app_id']).merge(rnn3, on=['app_id'])
+  
+  for i in range(3):
+    s_m[f'nn_{i+1}_soft'] = softmax(s_m[f'score_{i+1}'])
+    s_m[f'nn_{i+1}_rank'] = s_m[f'nn_{i+1}_soft'].rank()
+  for i in [9,10,12,13]:
+      s_m[f'sol_{i}_soft'] = softmax(s_m[f'sol_{i}'])
+      s_m[f'sol_{i}_rank'] = s_m[f'sol_{i}_soft'].rank()
+
+  agg_cols = joblib.load(f'{models_path}/agg_cols')
+  cb.load_model(f'{models_path}/agg_model')
+  cb = CatBoostClassifier()
+  s_m['flag'] = cb.predict_proba(s_m[cols])[:,1]
+  s_m[['app_id', 'flag']].to_csv('alpha_task_2/final_solution.csv', index=False)
+	
 # Модель нейросети
 class TransactionsRnn(nn.Module):
     def __init__(self, transactions_cat_features, embedding_projections, product_col_name='product', 
