@@ -88,7 +88,11 @@ def preprocess(train_df):
   
   
 # Функция для скоринга моделями бустинга и сохранения результатов
-def boost_scor(t_s, sample_subm, cols_path, model_path, cats_path, output_path):
+def boost_scor(t_s, sample_subm, model_paths, sol_path, model_number):
+  cols_path = f'{model_paths}/cols_{model_number}'
+  model_path = f'{model_paths}/model_{model_number}'
+  cats_path = f'{model_paths}/cats_{model_number}'
+  output_path = f'{sol_path}/sol_{model_number}.csv'
   test_scores = t_s.copy()
   cols = joblib.load(cols_path)
   cb2 = CatBoostClassifier()
@@ -132,7 +136,11 @@ def create_buckets_from_transactions(path_to_dataset, save_to_path, frame_with_i
         block += 1
 		
 # Функция для скоринга бустинга    
-def boost_scor(t_s, test_targ, cols_path, model_path, cats_path, output_path):
+def boost_scor(t_s, sample_subm, model_paths, sol_path, model_number):
+  cols_path = f'{model_paths}/cols_{model_number}'
+  model_path = f'{model_paths}/model_{model_number}'
+  cats_path = f'{model_paths}/cats_{model_number}'
+  output_path = f'{sol_path}/sol_{model_number}.csv'
   test_scores = t_s.copy()
   cols = joblib.load(cols_path)
   cb2 = CatBoostClassifier()
@@ -141,7 +149,7 @@ def boost_scor(t_s, test_targ, cols_path, model_path, cats_path, output_path):
   test_pool = Pool(test_scores[cols], cat_features = cats)
   test_scores['score'] = cb2.predict_proba(test_pool)[:,1]
   test_scores = test_scores[['app_id', 'score']]
-  sample_subm2 = test_targ.merge(test_scores, on=['app_id']).drop(['product'], axis=1)
+  sample_subm2 = sample_subm.merge(test_scores, on=['app_id'])
   sample_subm2.rename(columns={'score': 'flag'}, inplace=True)
   sample_subm2.to_csv(output_path, index=False)
 
