@@ -158,7 +158,7 @@ def nn_scoring(path_to_test_dataset, path_to_checkpoints, model_name, result_pat
   test_preds.to_csv(result_path, index=None)
 
 # Агрегация скорингов
-def agg_scoring(sols_path, model_path):
+def agg_scoring(sols_path, models_path):
   s9 = pd.read_csv(f'{sols_path}/sol9.csv', names = ['app_id', 'sol_9'], skiprows=1)
   s10 = pd.read_csv(f'{sols_path}/sol10.csv', names = ['app_id', 'sol_10'], skiprows=1)
   s12 = pd.read_csv(f'{sols_path}/sol12.csv', names = ['app_id', 'sol_12'], skiprows=1)
