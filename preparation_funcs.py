@@ -88,7 +88,7 @@ def preprocess(train_df):
   return all_feat[our_cols]
   
 # Функция обучения моделей бустинга
-def boost_fit(train_scores, MODEL_PATH, model_id)
+def boost_fit(train_scores, MODEL_PATH, model_id):
   cols = joblib.load(f'{MODEL_PATH}/cols_{model_id}')
   cats = joblib.load(f'{MODEL_PATH}/cats_{model_id}')
   params = joblib.load(f'{MODEL_PATH}/params_{model_id}')
