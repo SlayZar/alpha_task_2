@@ -93,7 +93,7 @@ def boost_fit(train_scores, MODEL_PATH, model_id):
   cats = joblib.load(f'{MODEL_PATH}/cats_{model_id}')
   params = joblib.load(f'{MODEL_PATH}/params_{model_id}')
   X_train, X_val, y_train, y_val = train_test_split(train_scores[cols], train_scores.flag, 
-                                                    test_size=0.25, random_state=123, stratify=train_scores.flag)
+                                                    test_size=0.2, random_state=42, stratify=train_scores.flag)
   train_pool = Pool(X_train, y_train, cat_features=cats)
   val_pool = Pool(X_val, y_val, cat_features=cats)
   cb = CatBoostClassifier(**params)
