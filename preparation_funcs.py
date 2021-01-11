@@ -101,7 +101,7 @@ def boost_scor(t_s, sample_subm, model_paths, sol_path, model_number):
   test_pool = Pool(test_scores[cols], cat_features = cats)
   test_scores['score'] = cb2.predict_proba(test_pool)[:,1]
   test_scores = test_scores[['app_id', 'score']]
-  sample_subm2 = sample_subm.merge(test_scores, on=['app_id']).drop(['flag'], axis=1)
+  sample_subm2 = sample_subm.merge(test_scores, on=['app_id']).drop(['product'], axis=1)
   sample_subm2.rename(columns={'score': 'flag'}, inplace=True)
   sample_subm2.to_csv(output_path, index=False)
   
