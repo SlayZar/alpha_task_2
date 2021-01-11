@@ -167,10 +167,10 @@ def nn_scoring(path_to_test_dataset, path_to_checkpoints, model_name, result_pat
 
 # Агрегация скорингов
 def agg_scoring(sols_path, models_path):
-  s9 = pd.read_csv(f'{sols_path}/sol9.csv', names = ['app_id', 'sol_9'], skiprows=1)
-  s10 = pd.read_csv(f'{sols_path}/sol10.csv', names = ['app_id', 'sol_10'], skiprows=1)
-  s12 = pd.read_csv(f'{sols_path}/sol12.csv', names = ['app_id', 'sol_12'], skiprows=1)
-  s13 = pd.read_csv(f'{sols_path}/sol13.csv', names = ['app_id', 'sol_13'], skiprows=1)
+  s9 = pd.read_csv(f'{sols_path}/sol_9.csv', names = ['app_id', 'sol_9'], skiprows=1)
+  s10 = pd.read_csv(f'{sols_path}/sol_10.csv', names = ['app_id', 'sol_10'], skiprows=1)
+  s12 = pd.read_csv(f'{sols_path}/sol_12.csv', names = ['app_id', 'sol_12'], skiprows=1)
+  s13 = pd.read_csv(f'{sols_path}/sol_13.csv', names = ['app_id', 'sol_13'], skiprows=1)
   rnn1 = pd.read_csv(f'{sols_path}/nn_mod1.csv', names = ['app_id', 'score_1'], skiprows=1)
   rnn2 = pd.read_csv(f'{sols_path}/nn_mod2.csv', names = ['app_id', 'score_2'], skiprows=1)
   rnn3 = pd.read_csv(f'{sols_path}/nn_mod3.csv', names = ['app_id', 'score_3'], skiprows=1)
