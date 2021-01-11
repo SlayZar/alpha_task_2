@@ -115,10 +115,9 @@ def boost_scor(t_s, sample_subm, model_paths, sol_path, model_number):
   test_pool = Pool(test_scores[cols], cat_features = cats)
   test_scores['score'] = cb2.predict_proba(test_pool)[:,1]
   test_scores = test_scores[['app_id', 'score']]
-  sample_subm2 = sample_subm.merge(test_scores, on=['app_id']).drop(['product'], axis=1)
+  sample_subm2 = sample_subm.merge(test_scores, on=['app_id']).drop(['product'], axis=1, errors='ignore')
   sample_subm2.rename(columns={'score': 'flag'}, inplace=True)
   sample_subm2.to_csv(output_path, index=False)
-  
 
 # Функция для подготовки данных для нейросети
 def create_buckets_from_transactions(path_to_dataset, save_to_path, frame_with_ids = None, 
@@ -148,25 +147,52 @@ def create_buckets_from_transactions(path_to_dataset, save_to_path, frame_with_i
                                                     save_to_file_path=os.path.join(save_to_path, 
                                                                                    f'processed_chunk_{block_as_str}.pkl'))
         block += 1
-		
-# Функция для скоринга бустинга    
-def boost_scor(t_s, sample_subm, model_paths, sol_path, model_number):
-  cols_path = f'{model_paths}/cols_{model_number}'
-  model_path = f'{model_paths}/model_{model_number}'
-  cats_path = f'{model_paths}/cats_{model_number}'
-  output_path = f'{sol_path}/sol_{model_number}.csv'
-  test_scores = t_s.copy()
-  cols = joblib.load(cols_path)
-  cb2 = CatBoostClassifier()
-  cb2.load_model(model_path)
-  cats = joblib.load(cats_path)
-  test_pool = Pool(test_scores[cols], cat_features = cats)
-  test_scores['score'] = cb2.predict_proba(test_pool)[:,1]
-  test_scores = test_scores[['app_id', 'score']]
-  sample_subm2 = sample_subm.merge(test_scores, on=['app_id'])
-  sample_subm2.rename(columns={'score': 'flag'}, inplace=True)
-  sample_subm2.to_csv(output_path, index=False)
 
+# Функция для обучения нейросети
+def nn_fit(transaction_features, embedding_projections, device, i):
+  path_to_checkpoints = f'checkpoints{i}/'
+  pat = i+2
+  es = EarlyStopping(patience=pat, mode='max', verbose=True, save_path=os.path.join(path_to_checkpoints, 'best_checkpoint.pt'), 
+                    metric_name='ROC-AUC', save_format='torch')
+  train_batch_size = 128
+  val_batch_szie = 128
+  if i < 3:
+    num_epochs = 15
+    model = TransactionsRnn(transaction_features, embedding_projections, top_classifier_units=128).to(device)
+  else:
+    num_epochs = 10
+    model = TransactionsRnn2(transaction_features, embedding_projections, top_classifier_units=64).to(device)
+  if i==0:
+    optimizer = torch.optim.AdamW(lr=1e-3, params=model.parameters())
+  else:
+    optimizer = torch.optim.AdamW(lr=2e-3, params=model.parameters())
+    if i==1:
+      fact = 0.7
+    else:
+      fact = 0.75
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max',
+                                          factor=fact, patience=0,
+                                          min_lr=1e-7, verbose=True)
+  for epoch in range(num_epochs):
+      print(f'Starting epoch {epoch+1}')
+      train_epoch(model, optimizer, dataset_train, batch_size=train_batch_size, 
+                  shuffle=True, print_loss_every_n_batches=500, device=device)
+      val_roc_auc = eval_model(model, dataset_val, batch_size=val_batch_szie, device=device)
+      es(val_roc_auc, model)  
+      if i>1:
+        scheduler.step(val_roc_auc)  
+      if es.early_stop:
+          print('Early stopping reached. Stop training...')
+          break
+      print(f'Epoch {epoch+1} completed. Val roc-auc: {val_roc_auc}')
+      if i ==1:
+        !mv 'checkpoints1/best_checkpoint.pt' 'alpha_task_2/models/nn_mod_1.pt'
+      if i ==2:
+        !mv 'checkpoints1/best_checkpoint.pt' 'alpha_task_2/models/nn_mod_2.pt'
+      if i ==3:
+        !mv 'checkpoints1/best_checkpoint.pt' 'alpha_task_2/models/nn_mod_3.pt'
+	
+	
 # Функция для скоринга моделью нейросети
 def nn_scoring(path_to_test_dataset, path_to_checkpoints, model_name, result_path, device):
   dir_with_test_datasets = os.listdir(path_to_test_dataset)
