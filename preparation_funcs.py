@@ -185,12 +185,12 @@ def nn_fit(transaction_features, embedding_projections, device, i):
           print('Early stopping reached. Stop training...')
           break
       print(f'Epoch {epoch+1} completed. Val roc-auc: {val_roc_auc}')
-      if i ==1:
-        !mv 'checkpoints1/best_checkpoint.pt' 'alpha_task_2/models/nn_mod_1.pt'
-      if i ==2:
-        !mv 'checkpoints1/best_checkpoint.pt' 'alpha_task_2/models/nn_mod_2.pt'
-      if i ==3:
-        !mv 'checkpoints1/best_checkpoint.pt' 'alpha_task_2/models/nn_mod_3.pt'
+#       if i ==1:
+#         !mv 'checkpoints1/best_checkpoint.pt' 'alpha_task_2/models/nn_mod_1.pt'
+#       if i ==2:
+#         !mv 'checkpoints2/best_checkpoint.pt' 'alpha_task_2/models/nn_mod_2.pt'
+#       if i ==3:
+#         !mv 'checkpoints3/best_checkpoint.pt' 'alpha_task_2/models/nn_mod_3.pt'
 	
 	
 # Функция для скоринга моделью нейросети
