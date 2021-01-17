@@ -1,6 +1,11 @@
 # Решение второй задачи соревнования по анализу данных Alfa Battle 2.0
 
+https://alfabattle.ru/2
+https://boosters.pro/championship/alfabattle2/rating
+
 Решение основано на агрегации скоров моделей бустинга и нейросети.
+
+Команда Fit_Predict - 15 место из 243 на Public LB - 0.7768830
 
 boost_i - модель бустинга с номером i
 
