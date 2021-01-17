@@ -86,20 +86,6 @@ def preprocess(train_df):
     if 'rub' in i:
       our_cols.append(i)
   return all_feat[our_cols]
-  
-# Функция обучения моделей бустинга
-def boost_fit(train_scores, MODEL_PATH, model_id):
-  cols = joblib.load(f'{MODEL_PATH}/cols_{model_id}')
-  cats = joblib.load(f'{MODEL_PATH}/cats_{model_id}')
-  params = joblib.load(f'{MODEL_PATH}/params_{model_id}')
-  X_train, X_val, y_train, y_val = train_test_split(train_scores[cols], train_scores.flag, 
-                                                    test_size=0.2, random_state=42, stratify=train_scores.flag)
-  train_pool = Pool(X_train, y_train, cat_features=cats)
-  val_pool = Pool(X_val, y_val, cat_features=cats)
-  cb = CatBoostClassifier(**params)
-  cb.fit(train_pool, eval_set=val_pool, early_stopping_rounds=150, verbose=0)
-  cb.save_model(f"{MODEL_PATH}/model_{model_id}")
-  print(f"Model {model_id} saved")  
 
 # Функция для скоринга моделями бустинга и сохранения результатов
 def boost_scor(t_s, sample_subm, model_paths, sol_path, model_number):
@@ -148,51 +134,6 @@ def create_buckets_from_transactions(path_to_dataset, save_to_path, frame_with_i
                                                                                    f'processed_chunk_{block_as_str}.pkl'))
         block += 1
 
-# Функция для обучения нейросети
-def nn_fit(transaction_features, embedding_projections, device, i):
-  path_to_checkpoints = f'checkpoints{i}/'
-  pat = i+2
-  es = EarlyStopping(patience=pat, mode='max', verbose=True, save_path=os.path.join(path_to_checkpoints, 'best_checkpoint.pt'), 
-                    metric_name='ROC-AUC', save_format='torch')
-  train_batch_size = 128
-  val_batch_szie = 128
-  if i < 3:
-    num_epochs = 15
-    model = TransactionsRnn(transaction_features, embedding_projections, top_classifier_units=128).to(device)
-  else:
-    num_epochs = 10
-    model = TransactionsRnn2(transaction_features, embedding_projections, top_classifier_units=64).to(device)
-  if i==0:
-    optimizer = torch.optim.AdamW(lr=1e-3, params=model.parameters())
-  else:
-    optimizer = torch.optim.AdamW(lr=2e-3, params=model.parameters())
-    if i==1:
-      fact = 0.7
-    else:
-      fact = 0.75
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max',
-                                          factor=fact, patience=0,
-                                          min_lr=1e-7, verbose=True)
-  for epoch in range(num_epochs):
-      print(f'Starting epoch {epoch+1}')
-      train_epoch(model, optimizer, dataset_train, batch_size=train_batch_size, 
-                  shuffle=True, print_loss_every_n_batches=500, device=device)
-      val_roc_auc = eval_model(model, dataset_val, batch_size=val_batch_szie, device=device)
-      es(val_roc_auc, model)  
-      if i>1:
-        scheduler.step(val_roc_auc)  
-      if es.early_stop:
-          print('Early stopping reached. Stop training...')
-          break
-      print(f'Epoch {epoch+1} completed. Val roc-auc: {val_roc_auc}')
-#       if i ==1:
-#         !mv 'checkpoints1/best_checkpoint.pt' 'alpha_task_2/models/nn_mod_1.pt'
-#       if i ==2:
-#         !mv 'checkpoints2/best_checkpoint.pt' 'alpha_task_2/models/nn_mod_2.pt'
-#       if i ==3:
-#         !mv 'checkpoints3/best_checkpoint.pt' 'alpha_task_2/models/nn_mod_3.pt'
-	
-	
 # Функция для скоринга моделью нейросети
 def nn_scoring(path_to_test_dataset, path_to_checkpoints, model_name, result_path, device):
   dir_with_test_datasets = os.listdir(path_to_test_dataset)
