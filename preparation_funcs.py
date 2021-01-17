@@ -171,7 +171,7 @@ def agg_scoring(sols_path, models_path):
   cb.load_model(f'{models_path}/agg_model')
   s_m['flag'] = cb.predict_proba(s_m[agg_cols])[:,1]
   s_m[['app_id', 'flag']].to_csv(f'{sols_path}/final_solution.csv', index=False)
-  retutn s_m
+  return s_m
 	
 # Модель нейросети
 class TransactionsRnn(nn.Module):
