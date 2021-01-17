@@ -165,13 +165,12 @@ def agg_scoring(sols_path, models_path):
   for i in [9,10,12,13]:
       s_m[f'sol_{i}_soft'] = softmax(s_m[f'sol_{i}'])
       s_m[f'sol_{i}_rank'] = s_m[f'sol_{i}_soft'].rank()
-
-  agg_cols = joblib.load(f'{models_path}/agg_cols')
-  cb = CatBoostClassifier()
-  cb.load_model(f'{models_path}/agg_model')
-  s_m['flag'] = cb.predict_proba(s_m[agg_cols])[:,1]
+  s_m['mean_boosting'] = s_m[['sol_9', 'sol_10', 'sol_12', 'sol_13']].mean(axis=1)
+  s_m['boost_rank'] = s_m['mean_boosting'].rank()
+  s_m['flag'] = s_m[['boost_rank', 'nn_1_rank', 'nn_2_rank', 'nn_3_rank']].mean(axis=1)
   s_m[['app_id', 'flag']].to_csv(f'{sols_path}/final_solution.csv', index=False)
   return s_m
+	
 	
 # Модель нейросети
 class TransactionsRnn(nn.Module):
