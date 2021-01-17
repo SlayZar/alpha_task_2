@@ -1,6 +1,7 @@
 # Решение второй задачи соревнования по анализу данных Alfa Battle 2.0
 
 https://alfabattle.ru/2
+
 https://boosters.pro/championship/alfabattle2/rating
 
 Решение основано на агрегации скоров моделей бустинга и нейросети.
