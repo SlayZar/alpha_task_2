@@ -6,7 +6,7 @@ https://boosters.pro/championship/alfabattle2/rating
 
 Решение основано на агрегации скоров моделей бустинга и нейросети.
 
-Команда Fit_Predict - 15 место из 243 на Public LB - 0.7768830
+Команда Fit_Predict - 15 место из 254 на Private LB - 0.77662
 
 boost_i - модель бустинга с номером i
 
